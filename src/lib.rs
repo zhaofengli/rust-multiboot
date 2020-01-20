@@ -103,8 +103,8 @@ struct MultibootInfo {
 
     _apm_table: u32,
 
-    _vbe_control_info: u32,
-    _vbe_mode_info: u32,
+    vbe_control_info: u32,
+    vbe_mode_info: u32,
     _vbe_mode: u16,
     _vbe_interface_off: u16,
     _vbe_interface_len: u16,
@@ -235,7 +235,7 @@ impl<'a> Multiboot<'a> {
     );
     check_flag!(
         doc = "If true, then the `vbe_*` fields are valid.",
-        _has_vbe,
+        has_vbe,
         11
     );
 
@@ -342,6 +342,28 @@ impl<'a> Multiboot<'a> {
         .max(self.modules().unwrap().map(|m| m.end).max().unwrap_or(end));
 
         round_up!(end, 4096)
+    }
+
+    /// Return address of the VESA BIOS information structure.
+    ///
+    /// This function returns the base address of the VESA BIOS
+    /// information structure (VBE Function 00h).
+    pub fn vbe_control_info(&self) -> Option<PAddr> {
+        match self.has_vbe() {
+            true => Some(self.header.vbe_control_info as PAddr),
+            false => None,
+        }
+    }
+
+    /// Return address of the VESA mode information structure.
+    ///
+    /// This function returns the base address of the VESA mode
+    /// information structure (VBE Function 01h).
+    pub fn vbe_mode_info(&self) -> Option<PAddr> {
+        match self.has_vbe() {
+            true => Some(self.header.vbe_mode_info as PAddr),
+            false => None,
+        }
     }
 }
 
